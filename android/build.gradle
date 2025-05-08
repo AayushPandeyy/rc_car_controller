@@ -1,0 +1,59 @@
+buildscript {
+    ext.kotlin_version = '1.9.22'
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.2.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+// Automatically assign namespaces to subprojects missing them
+subprojects {
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            project.android {
+                if (namespace == null) {
+                    namespace = project.group.toString() ?: "com.example.defaultnamespace"
+                }
+                // Remove package attribute from AndroidManifest.xml to prevent conflicts
+                project.tasks.whenTaskAdded { task ->
+                    if (task.name.contains('processDebugManifest') || task.name.contains('processReleaseManifest')) {
+                        task.doFirst {
+                            File manifestFile = file("${projectDir}/src/main/AndroidManifest.xml")
+                            if (manifestFile.exists()) {
+                                String manifestContent = manifestFile.text
+                                if (manifestContent.contains('package=')) {
+                                    manifestContent = manifestContent.replaceAll(/package="[^"]*"/, "")
+                                    manifestFile.write(manifestContent)
+                                    println "Removed 'package' attribute from ${manifestFile}"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+rootProject.buildDir = '../build'
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+subprojects {
+    project.evaluationDependsOn(':app')
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}

@@ -1,0 +1,2 @@
+D:/flutterProjects/bluetooth_rc_controller/android/app/.cxx/Debug/5h40j5ld/x86_64/CMakeFiles/edit_cache.dir
+D:/flutterProjects/bluetooth_rc_controller/android/app/.cxx/Debug/5h40j5ld/x86_64/CMakeFiles/rebuild_cache.dir
