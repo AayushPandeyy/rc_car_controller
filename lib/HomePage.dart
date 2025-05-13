@@ -39,11 +39,11 @@ class _HomePageState extends State<HomePage>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 500),
+      duration: Duration(milliseconds: 800),
     );
     _animation = CurvedAnimation(
       parent: _controller,
-      curve: Curves.easeOutBack,
+      curve: Curves.easeOutQuint,
     );
     _controller.forward();
 
@@ -155,7 +155,12 @@ class _HomePageState extends State<HomePage>
           SnackBar(
             content:
                 Text('Failed to connect to ${device.name}: ${e.toString()}'),
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.red[700],
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            margin: EdgeInsets.fromLTRB(15, 5, 15, 15),
           ),
         );
       }
@@ -178,7 +183,12 @@ class _HomePageState extends State<HomePage>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Device disconnected successfully'),
-            backgroundColor: Colors.blue,
+            backgroundColor: Color(0xFF1E88E5),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            margin: EdgeInsets.fromLTRB(15, 5, 15, 15),
           ),
         );
       }
@@ -188,7 +198,12 @@ class _HomePageState extends State<HomePage>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error disconnecting: ${e.toString()}'),
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.red[700],
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            margin: EdgeInsets.fromLTRB(15, 5, 15, 15),
           ),
         );
       }
@@ -249,18 +264,22 @@ class _HomePageState extends State<HomePage>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF1E1E2A), Colors.black],
+            colors: [Color(0xFF0B132B), Color(0xFF090F24)],
+            stops: [0.2, 1.0],
           ),
         ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildStatusBar(),
-              Expanded(
-                child: _buildCarDisplay(),
-              ),
-              _buildControlPanel(),
-            ],
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: SafeArea(
+            child: Column(
+              children: [
+                _buildStatusBar(),
+                Expanded(
+                  child: _buildCarDisplay(),
+                ),
+                _buildControlPanel(),
+              ],
+            ),
           ),
         ),
       ),
@@ -273,31 +292,47 @@ class _HomePageState extends State<HomePage>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Icon(
-                isConnected
-                    ? Icons.bluetooth_connected
-                    : Icons.bluetooth_disabled,
-                color: isConnected ? Colors.blue : Colors.grey,
-                size: 16,
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: isConnected
+                  ? Colors.blue.withOpacity(0.1)
+                  : Colors.grey.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isConnected
+                    ? Colors.blue.withOpacity(0.3)
+                    : Colors.grey.withOpacity(0.2),
               ),
-              SizedBox(width: 6),
-              Text(
-                isConnected ? "Connected" : "Disconnected",
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isConnected ? Colors.blue : Colors.grey,
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  isConnected
+                      ? Icons.bluetooth_connected
+                      : Icons.bluetooth_disabled,
+                  color: isConnected ? Colors.blue[300] : Colors.grey[400],
+                  size: 16,
                 ),
-              ),
-            ],
+                SizedBox(width: 6),
+                Text(
+                  isConnected ? "Connected" : "Disconnected",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: isConnected ? Colors.blue[300] : Colors.grey[400],
+                  ),
+                ),
+              ],
+            ),
           ),
           Text(
-            "RC Master",
+            "RC MASTER",
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.white,
+              letterSpacing: 1.5,
             ),
           ),
           SizedBox(width: 80),
@@ -308,112 +343,271 @@ class _HomePageState extends State<HomePage>
 
   Widget _buildCarDisplay() {
     return Stack(
+      fit: StackFit.expand,
       children: [
-        Positioned.fill(
-          child: Center(
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.blue.withOpacity(0.1),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue.withOpacity(0.1),
-                    blurRadius: 100,
-                    spreadRadius: 50,
-                  ),
-                ],
+        // Background animated circles
+        ...List.generate(3, (index) {
+          return Positioned(
+            top: 100 + (index * 30),
+            left: 0,
+            right: 0,
+            child: Center(
+              child: TweenAnimationBuilder(
+                tween: Tween<double>(begin: 0.0, end: 1.0),
+                duration: Duration(seconds: 8),
+                curve: Curves.easeInOut,
+                builder: (_, double value, __) {
+                  return Container(
+                    width: 150 + (index * 100),
+                    height: 150 + (index * 100),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isConnected
+                            ? Colors.blue.withOpacity(0.1 - (index * 0.02))
+                            : Colors.grey.withOpacity(0.1 - (index * 0.02)),
+                        width: 1,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          );
+        }),
+        
+        // Glow effect
+        Center(
+          child: Container(
+            width: 280,
+            height: 280,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: isConnected
+                    ? [
+                        Colors.blue.withOpacity(0.15),
+                        Colors.transparent,
+                      ]
+                    : [
+                        Colors.grey.withOpacity(0.1),
+                        Colors.transparent,
+                      ],
+                stops: [0.4, 1.0],
               ),
             ),
           ),
         ),
+
+        // Car display
         Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Car container with shadow
               Container(
                 width: 280,
                 height: 160,
-                alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: Colors.grey[850],
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Icon(
-                  Icons.directions_car,
-                  size: 80,
-                  color: Colors.grey[600],
-                ),
-              ),
-              SizedBox(height: 10),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isConnected
-                      ? Colors.blue.withOpacity(0.2)
-                      : Colors.grey.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isConnected
-                        ? Colors.blue.withOpacity(0.5)
-                        : Colors.grey.withOpacity(0.5),
-                    width: 1,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF232842),
+                      Color(0xFF1A1E33),
+                    ],
                   ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.4),
+                      blurRadius: 15,
+                      offset: Offset(0, 8),
+                    ),
+                  ],
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                child: Stack(
+                  alignment: Alignment.center,
                   children: [
-                    if (isConnected)
-                      Icon(
-                        Icons.bluetooth_connected,
-                        size: 16,
-                        color: Colors.blue,
-                      ),
-                    if (isConnected) SizedBox(width: 8),
-                    Text(
-                      isConnected && _connectedDevice != null
-                          ? _connectedDevice!.name ?? 'Unknown Device'
-                          : "No Device Connected",
-                      style: TextStyle(
-                        color: isConnected ? Colors.white : Colors.grey[400],
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                    // Background pattern
+                    Positioned.fill(
+                      child: Opacity(
+                        opacity: 0.1,
+                        child: CustomPaint(
+                          painter: GridPainter(),
+                        ),
                       ),
                     ),
-                    if (isConnected && _connectedDevice != null)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        child: Text(
-                          "(${_connectedDevice!.address})",
-                          style: TextStyle(
-                            color: Colors.grey[400],
-                            fontSize: 10,
+                    
+                    // Car icon with glow
+                    Container(
+                      padding: EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.grey[850]?.withOpacity(0.8),
+                        boxShadow: isConnected
+                            ? [
+                                BoxShadow(
+                                  color: Colors.blue.withOpacity(0.2),
+                                  blurRadius: 20,
+                                  spreadRadius: 1,
+                                )
+                              ]
+                            : [],
+                      ),
+                      child: Icon(
+                        Icons.directions_car,
+                        size: 70,
+                        color: isConnected ? Colors.blue[300] : Colors.grey[500],
+                      ),
+                    ),
+                    
+                    // Movement indicator
+                    if (currentDirection != "" && currentDirection != "NONE")
+                      Positioned(
+                        top: currentDirection.contains("UP") ? 20 : null,
+                        bottom: currentDirection.contains("DOWN") ? 20 : null,
+                        left: currentDirection.contains("LEFT") ? 20 : null,
+                        right: currentDirection.contains("RIGHT") ? 20 : null,
+                        child: Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.blue[400],
                           ),
                         ),
                       ),
                   ],
                 ),
-              )
+              ),
+              
+              SizedBox(height: 24),
+              
+              // Device info
+              AnimatedContainer(
+                duration: Duration(milliseconds: 300),
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                decoration: BoxDecoration(
+                  color: isConnected
+                      ? Colors.blue.withOpacity(0.12)
+                      : Colors.grey[800]!.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(
+                    color: isConnected
+                        ? Colors.blue.withOpacity(0.3)
+                        : Colors.grey.withOpacity(0.2),
+                    width: 1.5,
+                  ),
+                  boxShadow: isConnected
+                      ? [
+                          BoxShadow(
+                            color: Colors.blue.withOpacity(0.1),
+                            blurRadius: 15,
+                            spreadRadius: 1,
+                          )
+                        ]
+                      : [],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (isConnected)
+                      Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.blue.withOpacity(0.2),
+                        ),
+                        child: Icon(
+                          Icons.bluetooth_connected,
+                          size: 14,
+                          color: Colors.blue[300],
+                        ),
+                      ),
+                    if (isConnected) SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          isConnected && _connectedDevice != null
+                              ? _connectedDevice!.name ?? 'Unknown Device'
+                              : "No Device Connected",
+                          style: TextStyle(
+                            color: isConnected ? Colors.white : Colors.grey[400],
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        if (isConnected && _connectedDevice != null)
+                          Text(
+                            "${_connectedDevice!.address}",
+                            style: TextStyle(
+                              color: Colors.grey[400],
+                              fontSize: 12,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
-        Positioned(
+        
+        // Direction indicator
+        AnimatedPositioned(
+          duration: Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
           bottom: 20,
           left: 0,
           right: 0,
           child: Center(
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                "Direction: $currentDirection",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+            child: AnimatedOpacity(
+              opacity: currentDirection == "" || currentDirection == "NONE" ? 0 : 1,
+              duration: Duration(milliseconds: 200),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.blue.withOpacity(0.7),
+                      Colors.blue.withOpacity(0.5),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue.withOpacity(0.2),
+                      blurRadius: 10,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _getDirectionIcon(),
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      currentDirection,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -421,6 +615,29 @@ class _HomePageState extends State<HomePage>
         ),
       ],
     );
+  }
+
+  IconData _getDirectionIcon() {
+    switch (currentDirection) {
+      case "UP":
+        return Icons.arrow_upward;
+      case "DOWN":
+        return Icons.arrow_downward;
+      case "LEFT":
+        return Icons.arrow_back;
+      case "RIGHT":
+        return Icons.arrow_forward;
+      case "UP-LEFT":
+        return Icons.arrow_back_ios;
+      case "UP-RIGHT":
+        return Icons.arrow_forward_ios;
+      case "DOWN-LEFT":
+        return Icons.arrow_back_ios;
+      case "DOWN-RIGHT":
+        return Icons.arrow_forward_ios;
+      default:
+        return Icons.stop;
+    }
   }
 
   Widget _buildControlPanel() {
@@ -432,15 +649,19 @@ class _HomePageState extends State<HomePage>
       child: Container(
         padding: EdgeInsets.fromLTRB(24, 16, 24, 30),
         decoration: BoxDecoration(
-          color: Color(0xFF1E1E2A).withOpacity(0.8),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF1D2340), Color(0xFF151A30)],
+          ),
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(30),
             topRight: Radius.circular(30),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              blurRadius: 10,
+              color: Colors.black.withOpacity(0.4),
+              blurRadius: 12,
               offset: Offset(0, -2),
             ),
           ],
@@ -448,8 +669,9 @@ class _HomePageState extends State<HomePage>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Drag handle
             Container(
-              width: 40,
+              width: 50,
               height: 4,
               margin: EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
@@ -457,20 +679,46 @@ class _HomePageState extends State<HomePage>
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            Align(
-              alignment: Alignment.center,
-              child: Text(
-                "Control Panel",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+            
+            // Control panel header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isConnected ? Colors.blue : Colors.grey,
+                  ),
                 ),
-              ),
+                SizedBox(width: 8),
+                Text(
+                  "CONTROL PANEL",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 2,
+                  ),
+                ),
+                SizedBox(width: 8),
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isConnected ? Colors.blue : Colors.grey,
+                  ),
+                ),
+              ],
             ),
+            
             SizedBox(height: 24),
             _buildDirectionButtons(),
             SizedBox(height: 24),
+            
+            // Action buttons
             Center(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -479,7 +727,7 @@ class _HomePageState extends State<HomePage>
                     Icons.bluetooth,
                     isConnected ? "CHANGE DEVICE" : "PAIR DEVICE",
                     Colors.blue[400]!,
-                    backgroundColor: Colors.blue.withOpacity(0.2),
+                    backgroundColor: Colors.blue.withOpacity(0.15),
                     onTap: () async {
                       final BluetoothDevice? selectedDevice =
                           await Navigator.push(
@@ -500,7 +748,7 @@ class _HomePageState extends State<HomePage>
                       Icons.bluetooth_disabled,
                       "DISCONNECT",
                       Colors.red[400]!,
-                      backgroundColor: Colors.red.withOpacity(0.2),
+                      backgroundColor: Colors.red.withOpacity(0.15),
                       onTap: () {
                         _disconnectDevice();
                       },
@@ -517,22 +765,40 @@ class _HomePageState extends State<HomePage>
   Widget _buildDirectionButtons() {
     return Column(
       children: [
-        Text(
-          "DIRECTION",
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[400],
-            letterSpacing: 1,
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.grey[850]?.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            "DIRECTION",
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[400],
+              fontWeight: FontWeight.w600,
+              letterSpacing: 2,
+            ),
           ),
         ),
-        SizedBox(height: 12),
+        SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _buildDirectionButton(
-              Icons.keyboard_arrow_up,
+              "UP-LEFT",
+              Alignment.topLeft,
+              Icons.north_west,
+            ),
+            _buildDirectionButton(
               "UP",
               Alignment.topCenter,
+              Icons.keyboard_arrow_up,
+            ),
+            _buildDirectionButton(
+              "UP-RIGHT",
+              Alignment.topRight,
+              Icons.north_east,
             ),
           ],
         ),
@@ -540,18 +806,27 @@ class _HomePageState extends State<HomePage>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _buildDirectionButton(
-              Icons.keyboard_arrow_left,
               "LEFT",
               Alignment.centerLeft,
+              Icons.keyboard_arrow_left,
             ),
-            SizedBox(
-              height: 80,
-              width: 80,
+            Container(
+              height: 70,
+              width: 70,
+              decoration: BoxDecoration(
+                color: Colors.grey[900]?.withOpacity(0.3),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.gps_fixed,
+                color: Colors.grey[600],
+                size: 22,
+              ),
             ),
             _buildDirectionButton(
-              Icons.keyboard_arrow_right,
               "RIGHT",
               Alignment.centerRight,
+              Icons.keyboard_arrow_right,
             ),
           ],
         ),
@@ -559,9 +834,19 @@ class _HomePageState extends State<HomePage>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _buildDirectionButton(
-              Icons.keyboard_arrow_down,
+              "DOWN-LEFT",
+              Alignment.bottomLeft,
+              Icons.south_west,
+            ),
+            _buildDirectionButton(
               "DOWN",
               Alignment.bottomCenter,
+              Icons.keyboard_arrow_down,
+            ),
+            _buildDirectionButton(
+              "DOWN-RIGHT",
+              Alignment.bottomRight,
+              Icons.south_east,
             ),
           ],
         ),
@@ -570,7 +855,7 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget _buildDirectionButton(
-      IconData icon, String direction, Alignment alignment) {
+      String direction, Alignment alignment, IconData icon) {
     bool isActive = currentDirection == direction;
 
     return GestureDetector(
@@ -597,27 +882,54 @@ class _HomePageState extends State<HomePage>
       },
       child: Container(
         margin: EdgeInsets.all(4),
-        width: 60,
-        height: 60,
+        width: 65,
+        height: 65,
         decoration: BoxDecoration(
-          color: isActive
-              ? Colors.blue.withOpacity(0.6)
-              : Colors.grey[850]!.withOpacity(0.7),
-          borderRadius: BorderRadius.circular(12),
+          gradient: isActive
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.blue.withOpacity(0.8),
+                    Colors.blue.withOpacity(0.6),
+                  ],
+                )
+              : LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.grey[850]!.withOpacity(0.8),
+                    Colors.grey[900]!.withOpacity(0.8),
+                  ],
+                ),
+          borderRadius: BorderRadius.circular(18),
           boxShadow: isActive
               ? [
                   BoxShadow(
-                    color: Colors.blue.withOpacity(0.3),
-                    blurRadius: 8,
-                    spreadRadius: 1,
+                    color: Colors.blue.withOpacity(0.35),
+                    blurRadius: 12,
+                    spreadRadius: 2,
                   )
                 ]
-              : null,
+              : [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 5,
+                    spreadRadius: 0,
+                    offset: Offset(0, 2),
+                  )
+                ],
+          border: Border.all(
+            color: isActive
+                ? Colors.blue.withOpacity(0.6)
+                : Colors.grey[700]!.withOpacity(0.3),
+            width: 1.5,
+          ),
         ),
         child: Icon(
           icon,
           color: isActive ? Colors.white : Colors.grey[400],
-          size: 28,
+          size: 30,
         ),
       ),
     );
@@ -633,25 +945,44 @@ class _HomePageState extends State<HomePage>
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 24, horizontal: 24),
+        padding: EdgeInsets.symmetric(vertical: 18, horizontal: 24),
         decoration: BoxDecoration(
           color: backgroundColor ?? Colors.grey[850],
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 8,
+              offset: Offset(0, 3),
+            ),
+          ],
+          border: Border.all(
+            color: iconColor.withOpacity(0.3),
+            width: 1.5,
+          ),
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              color: iconColor,
-              size: 24,
+            Container(
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: iconColor,
+                size: 22,
+              ),
             ),
-            SizedBox(height: 6),
+            SizedBox(height: 8),
             Text(
               label,
               style: TextStyle(
                 fontSize: 11,
-                color: Colors.grey[400],
-                letterSpacing: 0.5,
+                color: Colors.grey[300],
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.8,
               ),
             ),
           ],
@@ -659,4 +990,36 @@ class _HomePageState extends State<HomePage>
       ),
     );
   }
+}
+
+// Grid painter for background pattern
+class GridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withOpacity(0.15)
+      ..strokeWidth = 0.5
+      ..style = PaintingStyle.stroke;
+
+    // Draw horizontal lines
+    for (int i = 0; i < size.height; i += 10) {
+      canvas.drawLine(
+        Offset(0, i.toDouble()),
+        Offset(size.width, i.toDouble()),
+        paint,
+      );
+    }
+
+    // Draw vertical lines
+    for (int i = 0; i < size.width; i += 10) {
+      canvas.drawLine(
+        Offset(i.toDouble(), 0),
+        Offset(i.toDouble(), size.height),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
