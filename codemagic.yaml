@@ -1,0 +1,33 @@
+workflows:
+  ios-simulator-build:
+    name: iOS Simulator Build
+    environment:
+      flutter: stable
+      xcode: latest
+    scripts:
+      - name: Get Flutter packages
+        script: flutter pub get
+
+      - name: Trigger Podfile generation
+        script: |
+          flutter build ios --simulator --no-codesign || true
+
+      - name: Set iOS minimum version to 15.5
+        script: |
+          if [ -f ios/Podfile ]; then
+            sed -i '' 's/platform :ios, .*/platform :ios, '\''15.5'\''/' ios/Podfile
+          else
+            echo "Podfile not found"
+          fi
+
+      - name: Install CocoaPods
+        script: |
+          cd ios
+          pod install
+          cd ..
+
+      - name: Final iOS simulator build
+        script: flutter build ios --simulator --no-codesign
+
+    artifacts:
+      - build/ios/iphonesimulator/Runner.app
