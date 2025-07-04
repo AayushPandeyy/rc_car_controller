@@ -1,5 +1,6 @@
-import 'package:bluetooth_rc_controller/HomePage.dart';
+import 'package:bluetooth_rc_controller/CarControllerPage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'dart:async';
 import 'dart:typed_data';
@@ -27,6 +28,16 @@ class _BluetoothDevicesScreenState extends State<BluetoothDevicesScreen> {
   void initState() {
     super.initState();
     _checkBluetoothState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _lockPortraitOrientation();
+    });
+  }
+
+  void _lockPortraitOrientation() async {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
   }
 
   @override
@@ -185,7 +196,7 @@ class _BluetoothDevicesScreenState extends State<BluetoothDevicesScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => HomePage(
+          builder: (context) => CarControllerPage(
             connection: connection,
             device: device, 
           ),

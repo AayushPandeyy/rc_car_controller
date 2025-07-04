@@ -1,3 +1,4 @@
+import 'package:bluetooth_rc_controller/CarControllerPage.dart';
 import 'package:bluetooth_rc_controller/HomePage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,7 +26,8 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.black,
         fontFamily: 'Poppins',
       ),
-      home: HomePage(connection: null,),
+      home: RobotConfigHomePage(
+      ),
     );
   }
 }
